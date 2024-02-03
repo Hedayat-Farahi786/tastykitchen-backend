@@ -7,35 +7,28 @@ const User = require('../models/user')
 // Create a new order
 router.post('/', async (req, res) => {
     try {
-      // Extract order data from the request body
-      const {
-        customer,
-        delivery,
-        products,
-        totalPrice,
-        payment,
-        time,
-      } = req.body;
-  
-      // Check if a user with the given phone number already exists
-      let user = await User.findOne({ phone: customer.phone });
-  
-      if (!user) {
-        // If the user doesn't exist, create a new user
-        res = customer;
+      const { customer, delivery, products, totalPrice, payment, time } = req.body;
 
-        res.address = {
-            street: delivery.street,
-            postcode: delivery.postcode,
-            floor: delivery.floor,
+        let user = await User.findOne({ phone: customer.phone });
+
+        if (!user) {
+            // Create a new user object omitting the email if not provided
+            const userData = {
+                name: customer.name,
+                phone: customer.phone,
+                // Include email only if it's provided in the payload
+                ...(customer.email && { email: customer.email }),
+                address: {
+                    street: delivery.street,
+                    postcode: delivery.postcode,
+                    floor: delivery.floor,
+                },
+            };
+
+            user = new User(userData);
+            await user.save();
         }
 
-        user = new User(customer);
-        // Assuming 'customer' contains fields like 'name', 'phone', and other user details
-  
-        // Save the new user to the database
-        await user.save();
-      }
       console.log(user);
   
       // Create a new Order document using the Order model
