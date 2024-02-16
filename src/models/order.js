@@ -25,6 +25,8 @@ const orderSchema = new mongoose.Schema({
   ],
   totalPrice: Number,
   payment: String,
+  orderNumber: String,
+  status: String,
   time: Date,
 });
 
