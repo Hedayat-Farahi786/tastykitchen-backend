@@ -64,9 +64,9 @@ router.get('/', async (req, res) => {
 });
 
 // Get a single order by ID
-router.get('/:id', async (req, res) => {
+router.get('/:orderNumber', async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findOne({ orderNumber: req.params.orderNumber });
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
