@@ -30,7 +30,7 @@ router.post('/', async (req, res) => {
 
         // Calculate the order number based on the current number of orders
         const ordersCount = await Order.countDocuments();
-        const orderNumber = `#${1000 + ordersCount}`;
+        const orderNumber = `${1000 + ordersCount}`;
 
         // Create a new Order document using the Order model
         const newOrder = new Order({
