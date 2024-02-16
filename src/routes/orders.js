@@ -4,12 +4,6 @@ const router = express.Router();
 const Order = require('../models/order');
 const User = require('../models/user')
 
-// Create a new order
-const express = require('express');
-const router = express.Router();
-const Order = require('../models/Order');
-const User = require('../models/User');
-
 router.post('/', async (req, res) => {
     try {
         const { customer, delivery, products, totalPrice, payment, time } = req.body;
