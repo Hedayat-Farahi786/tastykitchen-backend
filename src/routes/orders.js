@@ -5,9 +5,14 @@ const Order = require('../models/order');
 const User = require('../models/user')
 
 // Create a new order
+const express = require('express');
+const router = express.Router();
+const Order = require('../models/Order');
+const User = require('../models/User');
+
 router.post('/', async (req, res) => {
     try {
-      const { customer, delivery, products, totalPrice, payment, time } = req.body;
+        const { customer, delivery, products, totalPrice, payment, time } = req.body;
 
         let user = await User.findOne({ phone: customer.phone });
 
@@ -29,28 +34,30 @@ router.post('/', async (req, res) => {
             await user.save();
         }
 
-      console.log(user);
-  
-      // Create a new Order document using the Order model
-      const newOrder = new Order({
-        customer: user._id, // Connect the order to the user
-        delivery,
-        products,
-        totalPrice,
-        payment,
-        time,
-      });
+        // Calculate the order number based on the current number of orders
+        const ordersCount = await Order.countDocuments();
+        const orderNumber = `#${1000 + ordersCount}`;
 
-      console.log(newOrder.customer);
-  
-      // Save the new order to the database
-      const savedOrder = await newOrder.save();
-  
-      res.status(201).json(savedOrder);
+        // Create a new Order document using the Order model
+        const newOrder = new Order({
+            orderNumber,
+            status: 'pending', // Set the default status to 'pending'
+            customer: user._id, // Connect the order to the user
+            delivery,
+            products,
+            totalPrice,
+            payment,
+            time,
+        });
+
+        // Save the new order to the database
+        const savedOrder = await newOrder.save();
+
+        res.status(201).json(savedOrder);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
-  });
+});
 
 // Get all orders
 router.get('/', async (req, res) => {

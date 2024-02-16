@@ -7,7 +7,12 @@ const Order = require("../models/order")
 // Create a new user
 router.post('/', async (req, res) => {
   try {
-    const user = new User(req.body);
+    const userData = {
+      ...req.body,
+      createdAt: new Date() // Add createdAt field with current date and time
+    };
+
+    const user = new User(userData);
     await user.save();
     res.status(201).json(user);
   } catch (error) {

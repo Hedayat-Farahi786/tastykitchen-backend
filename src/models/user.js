@@ -16,6 +16,7 @@ const customerSchema = new mongoose.Schema({
     floor: String
     // Add more address-related fields as needed (e.g., city, state, country)
   },
+  createdAt: Date
   // Add more customer-related fields as needed (e.g., loyaltyPoints, preferences, etc.)
 });
 
