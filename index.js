@@ -15,13 +15,10 @@ app.use(cors());
 
 // Connect to MongoDB
 mongoose
-  .connect(
-    process.env.MONGO_URL,
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
+  .connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
     console.log("Connected to MongoDB");
   })
@@ -29,10 +26,9 @@ mongoose
     console.error("Error connecting to MongoDB:", err);
   });
 
-
-  app.get("/", (req, res) => {
-    res.send("Hello! :)")
-  })
+app.get("/", (req, res) => {
+  res.send("Hello! :)");
+});
 
 // Routes
 app.use("/products", require("./src/routes/products"));
@@ -41,6 +37,7 @@ app.use("/orders", require("./src/routes/orders"));
 app.use("/users", require("./src/routes/users"));
 app.use("/testimonials", require("./src/routes/testimonials"));
 app.use("/contacts", require("./src/routes/contacts"));
+app.use("/revenue", require("./src/routes/revenue"));
 
 // Start the server
 app.listen(PORT, () => {
