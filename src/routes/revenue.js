@@ -13,9 +13,18 @@ router.get("/", async (req, res) => {
     console.log(startDate, endDate)
     
     // Fetch orders within the specified date range
-    const orders = await Order.find({
-      time: { $gte: startDate, $lte: endDate },
-    });
+
+    let orders;
+
+    if(start && end){
+
+      orders = await Order.find({
+        time: { $gte: startDate, $lte: endDate },
+      });
+    } else {
+      orders = await Order.find();
+    }
+    
     // Calculate revenue data
     const revenueData = calculateRevenueData(orders);
 
