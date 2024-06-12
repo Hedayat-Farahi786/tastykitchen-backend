@@ -57,10 +57,30 @@ router.post("/", async (req, res) => {
 // Get all orders
 router.get("/", async (req, res) => {
   try {
-    const orders = await Order.find().populate({path: 'customer', model: 'Customer'}).populate({
-      path: "products.productId",
-      model: "Product",
-    });
+    const orders = await Order.find()
+      .sort({ createdAt: -1 })
+      .populate({ path: "customer", model: "Customer" })
+      .populate({
+        path: "products.productId",
+        model: "Product",
+      });
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all orders
+router.get("/dashboardOrders", async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate({ path: "customer", model: "Customer" })
+      .populate({
+        path: "products.productId",
+        model: "Product",
+      });
     res.status(200).json(orders);
   } catch (error) {
     res.status(500).json({ error: error.message });
