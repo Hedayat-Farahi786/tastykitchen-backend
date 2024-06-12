@@ -76,7 +76,7 @@ router.get('/', async (req, res) => {
         res.status(200).json(products);
       } else {
         // If no menuId parameter is provided, return all products
-        const allProducts = await Product.find();
+        const allProducts = await Product.find().populate('menuId');
         res.status(200).json(allProducts);
       }
     } catch (error) {
