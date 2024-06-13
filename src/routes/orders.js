@@ -48,8 +48,6 @@ router.post("/", async (req, res) => {
     // Save the new order to the database
     const savedOrder = await newOrder.save();
 
-    req.io.emit("new_order", savedOrder);
-
     res.status(201).json(savedOrder);
   } catch (error) {
     res.status(500).json({ error: error.message });
