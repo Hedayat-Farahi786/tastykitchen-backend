@@ -58,7 +58,7 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const orders = await Order.find()
-      .sort({ createdAt: -1 })
+      .sort({ orderNumber: -1 })
       .populate({ path: "customer", model: "Customer" })
       .populate({
         path: "products.productId",
@@ -142,7 +142,7 @@ router.get('/sales', async (req, res) => {
 router.get("/dashboardOrders", async (req, res) => {
   try {
     const orders = await Order.find()
-      .sort({ createdAt: -1 })
+      .sort({ orderNumber: -1 })
       .limit(5)
       .populate({ path: "customer", model: "Customer" })
       .populate({
