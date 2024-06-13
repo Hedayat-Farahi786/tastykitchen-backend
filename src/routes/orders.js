@@ -57,7 +57,25 @@ router.post("/", async (req, res) => {
 // Get all orders
 router.get("/", async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query; // Get page and limit from query params, with default values
+    const { page = 1, limit = 10, orderNumber, customerName, payment, dateFrom, dateTo } = req.query;
+
+    const query = {};
+    if (orderNumber) {
+      query.orderNumber = orderNumber;
+    }
+    if (customerName) {
+      query['customer.name'] = { $regex: customerName, $options: 'i' }; // Case-insensitive search
+    }
+    if (payment) {
+      query.payment = payment;
+    }
+    if (dateFrom) {
+      query.time = { ...query.time, $gte: new Date(dateFrom) };
+    }
+    if (dateTo) {
+      query.time = { ...query.time, $lte: new Date(dateTo) };
+    }
+
     const options = {
       page: parseInt(page, 10),
       limit: parseInt(limit, 10),
@@ -67,8 +85,8 @@ router.get("/", async (req, res) => {
         { path: 'products.productId', model: 'Product' }
       ]
     };
-    
-    const orders = await Order.paginate({}, options);
+
+    const orders = await Order.paginate(query, options);
     res.status(200).json({
       orders: orders.docs,
       total: orders.totalDocs,
@@ -79,6 +97,7 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 router.get('/sales', async (req, res) => {
   // Calculate totals
