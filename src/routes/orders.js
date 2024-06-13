@@ -57,14 +57,24 @@ router.post("/", async (req, res) => {
 // Get all orders
 router.get("/", async (req, res) => {
   try {
-    const orders = await Order.find()
-      .sort({ orderNumber: -1 })
-      .populate({ path: "customer", model: "Customer" })
-      .populate({
-        path: "products.productId",
-        model: "Product",
-      });
-    res.status(200).json(orders);
+    const { page = 1, limit = 10 } = req.query; // Get page and limit from query params, with default values
+    const options = {
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+      sort: { orderNumber: -1 },
+      populate: [
+        { path: 'customer', model: 'Customer' },
+        { path: 'products.productId', model: 'Product' }
+      ]
+    };
+    
+    const orders = await Order.paginate({}, options);
+    res.status(200).json({
+      orders: orders.docs,
+      total: orders.totalDocs,
+      totalPages: orders.totalPages,
+      currentPage: orders.page
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
