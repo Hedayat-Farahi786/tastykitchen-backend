@@ -81,7 +81,7 @@ router.get('/sales', async (req, res) => {
       monthTotalSales: 0,
       weekTotalSales: 0,
       dayTotalSales: 0,
-      monthlyOrderTotals: Array(12).fill(0) // Initialize array for 12 months
+      monthlyOrderTotals: {}
   };
 
   // Loop through orders to calculate totals
@@ -111,14 +111,30 @@ router.get('/sales', async (req, res) => {
           totals.dayTotalSales += order.totalPrice;
       }
 
-      // Calculate monthly order totals for the last 12 months
-      const monthsDiff = (currentDate.getFullYear() - orderDate.getFullYear()) * 12 + (currentDate.getMonth() - orderDate.getMonth());
-      if (monthsDiff < 12) {
-          totals.monthlyOrderTotals[monthsDiff] += 1;
+      // Calculate monthly order totals for all years and months
+      const orderYear = orderDate.getFullYear();
+      const orderMonth = orderDate.getMonth();
+      if (!totals.monthlyOrderTotals[orderYear]) {
+          totals.monthlyOrderTotals[orderYear] = Array(12).fill(0);
       }
+      totals.monthlyOrderTotals[orderYear][orderMonth] += 1;
   });
 
-  res.json(totals);
+  // Transform the monthlyOrderTotals object into the desired array format
+  const monthlyOrderTotalsArray = Object.keys(totals.monthlyOrderTotals).map(year => ({
+      name: year,
+      data: totals.monthlyOrderTotals[year]
+  }));
+
+  const result = {
+      yearTotalSales: totals.yearTotalSales,
+      monthTotalSales: totals.monthTotalSales,
+      weekTotalSales: totals.weekTotalSales,
+      dayTotalSales: totals.dayTotalSales,
+      monthlyOrderTotals: monthlyOrderTotalsArray
+  };
+
+  res.json(result);
 });
 
 
