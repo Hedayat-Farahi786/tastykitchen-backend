@@ -70,6 +70,58 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get('/sales', async (req, res) => {
+  // Calculate totals
+  const orders = await Order.find();
+
+  const currentDate = new Date();
+
+  const totals = {
+      yearTotalSales: 0,
+      monthTotalSales: 0,
+      weekTotalSales: 0,
+      dayTotalSales: 0,
+      monthlyOrderTotals: Array(12).fill(0) // Initialize array for 12 months
+  };
+
+  // Loop through orders to calculate totals
+  orders.forEach(order => {
+      const orderDate = new Date(order.time);
+
+      // Calculate total sales for each category
+      if (orderDate.getFullYear() === currentDate.getFullYear()) {
+          totals.yearTotalSales += order.totalPrice;
+      }
+
+      if (orderDate.getFullYear() === currentDate.getFullYear() &&
+          orderDate.getMonth() === currentDate.getMonth()) {
+          totals.monthTotalSales += order.totalPrice;
+      }
+
+      // Calculate week total (assuming current week as 7 days)
+      const millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000;
+      const weekAgo = currentDate - millisecondsPerWeek;
+      if (orderDate >= weekAgo && orderDate <= currentDate) {
+          totals.weekTotalSales += order.totalPrice;
+      }
+
+      // Calculate day total (assuming current day)
+      const startOfDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+      if (orderDate >= startOfDay && orderDate <= currentDate) {
+          totals.dayTotalSales += order.totalPrice;
+      }
+
+      // Calculate monthly order totals for the last 12 months
+      const monthsDiff = (currentDate.getFullYear() - orderDate.getFullYear()) * 12 + (currentDate.getMonth() - orderDate.getMonth());
+      if (monthsDiff < 12) {
+          totals.monthlyOrderTotals[monthsDiff] += 1;
+      }
+  });
+
+  res.json(totals);
+});
+
+
 // Get all orders
 router.get("/dashboardOrders", async (req, res) => {
   try {
