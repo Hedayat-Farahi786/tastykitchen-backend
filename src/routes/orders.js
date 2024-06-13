@@ -60,12 +60,24 @@ router.get("/", async (req, res) => {
     const { page = 1, limit = 10, orderNumber, customerName, date } = req.query;
 
     const query = {};
+
+    // Handle orderNumber search
     if (orderNumber) {
-      query.orderNumber = orderNumber;
+      query.orderNumber = {
+        $regex: `^${orderNumber}`, // Matches exactly the orderNumber
+        $options: 'i' // Case-insensitive
+      };
     }
+
+    // Handle customerName search
     if (customerName) {
-      query['customer.name'] = { $regex: customerName, $options: 'i' }; // Case-insensitive search
+      query['customer.name'] = {
+        $regex: `^${customerName}`, // Matches exactly the customerName
+        $options: 'i' // Case-insensitive
+      };
     }
+
+    // Handle date search
     if (date) {
       // Assuming date is provided in ISO format (e.g., YYYY-MM-DD)
       const startDate = new Date(date);
@@ -96,6 +108,7 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 
 router.get('/sales', async (req, res) => {
