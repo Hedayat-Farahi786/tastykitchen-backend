@@ -57,7 +57,7 @@ router.post("/", async (req, res) => {
 // Get all orders
 router.get("/", async (req, res) => {
   try {
-    const { page = 1, limit = 10, orderNumber, customerName, payment, dateFrom, dateTo } = req.query;
+    const { page = 1, limit = 10, orderNumber, customerName, date } = req.query;
 
     const query = {};
     if (orderNumber) {
@@ -66,14 +66,13 @@ router.get("/", async (req, res) => {
     if (customerName) {
       query['customer.name'] = { $regex: customerName, $options: 'i' }; // Case-insensitive search
     }
-    if (payment) {
-      query.payment = payment;
-    }
-    if (dateFrom) {
-      query.time = { ...query.time, $gte: new Date(dateFrom) };
-    }
-    if (dateTo) {
-      query.time = { ...query.time, $lte: new Date(dateTo) };
+    if (date) {
+      // Assuming date is provided in ISO format (e.g., YYYY-MM-DD)
+      const startDate = new Date(date);
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1); // End date is the next day to cover the entire day
+
+      query.time = { $gte: startDate, $lt: endDate };
     }
 
     const options = {
