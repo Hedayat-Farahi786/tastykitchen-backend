@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const Order = require("../models/order");
 const User = require("../models/user");
+const { notifyNewOrder } = require('../websocketServer');
 
 router.post("/", async (req, res) => {
   try {
@@ -47,6 +48,8 @@ router.post("/", async (req, res) => {
 
     // Save the new order to the database
     const savedOrder = await newOrder.save();
+
+    notifyNewOrder(savedOrder);
 
     res.status(201).json(savedOrder);
   } catch (error) {
