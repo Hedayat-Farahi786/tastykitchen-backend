@@ -15,7 +15,11 @@ function initializeWebSocket(server) {
 }
 
 function notifyNewOrder(order) {
-    io.emit('newOrder', order);
+    if (io) {
+        io.emit('newOrder', order);
+    } else {
+        console.error('Socket.IO server is not initialized.');
+    }
 }
 
 module.exports = {
