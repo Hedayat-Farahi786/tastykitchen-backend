@@ -57,7 +57,7 @@ router.post("/", async (req, res) => {
 // Get all orders
 router.get("/", async (req, res) => {
   try {
-    const { page = 1, limit = 10, orderNumber, customerName, date } = req.query;
+    const { page = 1, limit = 10, orderNumber, date } = req.query;
 
     const query = {};
 
@@ -69,13 +69,13 @@ router.get("/", async (req, res) => {
       };
     }
 
-    // Handle customerName search
-    if (customerName) {
-      query['customer.name'] = {
-        $regex: `^${customerName}`, // Matches exactly the customerName
-        $options: 'i' // Case-insensitive
-      };
-    }
+    // // Handle customerName search
+    // if (customerName) {
+    //   query['customer.name'] = {
+    //     $regex: `^${customerName}`, // Matches exactly the customerName
+    //     $options: 'i' // Case-insensitive
+    //   };
+    // }
 
     // Handle date search
     if (date) {
