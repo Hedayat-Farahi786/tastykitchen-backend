@@ -5,13 +5,21 @@ const bodyParser = require("body-parser");
 const app = express();
 const PORT = process.env.PORT || 4000;
 const dotenv = require("dotenv").config();
-
+const sockedIo = require("socket.io");
+const http = require("http");
+const server = http.createServer(app);
+const io = sockedIo(server);
 const cors = require("cors");
 
 // Middleware
 app.use(bodyParser.json());
 
 app.use(cors());
+
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
 // Connect to MongoDB
 mongoose

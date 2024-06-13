@@ -3,7 +3,6 @@ const express = require("express");
 const router = express.Router();
 const Order = require("../models/order");
 const User = require("../models/user");
-const { notifyNewOrder } = require('../../websocketServer');
 
 router.post("/", async (req, res) => {
   try {
@@ -49,7 +48,7 @@ router.post("/", async (req, res) => {
     // Save the new order to the database
     const savedOrder = await newOrder.save();
 
-    notifyNewOrder(savedOrder);
+    req.io.emit("new_order", savedOrder);
 
     res.status(201).json(savedOrder);
   } catch (error) {
@@ -68,7 +67,7 @@ router.get("/", async (req, res) => {
     if (orderNumber) {
       query.orderNumber = {
         $regex: `^${orderNumber}`, // Matches exactly the orderNumber
-        $options: 'i' // Case-insensitive
+        $options: "i", // Case-insensitive
       };
     }
 
@@ -95,9 +94,9 @@ router.get("/", async (req, res) => {
       limit: parseInt(limit, 10),
       sort: { orderNumber: -1 },
       populate: [
-        { path: 'customer', model: 'Customer' },
-        { path: 'products.productId', model: 'Product' }
-      ]
+        { path: "customer", model: "Customer" },
+        { path: "products.productId", model: "Product" },
+      ],
     };
 
     const orders = await Order.paginate(query, options);
@@ -105,82 +104,87 @@ router.get("/", async (req, res) => {
       orders: orders.docs,
       total: orders.totalDocs,
       totalPages: orders.totalPages,
-      currentPage: orders.page
+      currentPage: orders.page,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-
-
-router.get('/sales', async (req, res) => {
+router.get("/sales", async (req, res) => {
   // Calculate totals
   const orders = await Order.find();
 
   const currentDate = new Date();
 
   const totals = {
-      yearTotalSales: 0,
-      monthTotalSales: 0,
-      weekTotalSales: 0,
-      dayTotalSales: 0,
-      monthlyOrderTotals: {}
+    yearTotalSales: 0,
+    monthTotalSales: 0,
+    weekTotalSales: 0,
+    dayTotalSales: 0,
+    monthlyOrderTotals: {},
   };
 
   // Loop through orders to calculate totals
-  orders.forEach(order => {
-      const orderDate = new Date(order.time);
+  orders.forEach((order) => {
+    const orderDate = new Date(order.time);
 
-      // Calculate total sales for each category
-      if (orderDate.getFullYear() === currentDate.getFullYear()) {
-          totals.yearTotalSales += order.totalPrice;
-      }
+    // Calculate total sales for each category
+    if (orderDate.getFullYear() === currentDate.getFullYear()) {
+      totals.yearTotalSales += order.totalPrice;
+    }
 
-      if (orderDate.getFullYear() === currentDate.getFullYear() &&
-          orderDate.getMonth() === currentDate.getMonth()) {
-          totals.monthTotalSales += order.totalPrice;
-      }
+    if (
+      orderDate.getFullYear() === currentDate.getFullYear() &&
+      orderDate.getMonth() === currentDate.getMonth()
+    ) {
+      totals.monthTotalSales += order.totalPrice;
+    }
 
-      // Calculate week total (assuming current week as 7 days)
-      const millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000;
-      const weekAgo = currentDate - millisecondsPerWeek;
-      if (orderDate >= weekAgo && orderDate <= currentDate) {
-          totals.weekTotalSales += order.totalPrice;
-      }
+    // Calculate week total (assuming current week as 7 days)
+    const millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const weekAgo = currentDate - millisecondsPerWeek;
+    if (orderDate >= weekAgo && orderDate <= currentDate) {
+      totals.weekTotalSales += order.totalPrice;
+    }
 
-      // Calculate day total (assuming current day)
-      const startOfDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-      if (orderDate >= startOfDay && orderDate <= currentDate) {
-          totals.dayTotalSales += order.totalPrice;
-      }
+    // Calculate day total (assuming current day)
+    const startOfDay = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate()
+    );
+    if (orderDate >= startOfDay && orderDate <= currentDate) {
+      totals.dayTotalSales += order.totalPrice;
+    }
 
-      // Calculate monthly order totals for all years and months
-      const orderYear = orderDate.getFullYear();
-      const orderMonth = orderDate.getMonth();
-      if (!totals.monthlyOrderTotals[orderYear]) {
-          totals.monthlyOrderTotals[orderYear] = Array(12).fill(0);
-      }
-      totals.monthlyOrderTotals[orderYear][orderMonth] += 1;
+    // Calculate monthly order totals for all years and months
+    const orderYear = orderDate.getFullYear();
+    const orderMonth = orderDate.getMonth();
+    if (!totals.monthlyOrderTotals[orderYear]) {
+      totals.monthlyOrderTotals[orderYear] = Array(12).fill(0);
+    }
+    totals.monthlyOrderTotals[orderYear][orderMonth] += 1;
   });
 
   // Transform the monthlyOrderTotals object into the desired array format
-  const monthlyOrderTotalsArray = Object.keys(totals.monthlyOrderTotals).map(year => ({
+  const monthlyOrderTotalsArray = Object.keys(totals.monthlyOrderTotals).map(
+    (year) => ({
       name: year,
-      data: totals.monthlyOrderTotals[year]
-  }));
+      data: totals.monthlyOrderTotals[year],
+    })
+  );
 
   const result = {
-      yearTotalSales: totals.yearTotalSales,
-      monthTotalSales: totals.monthTotalSales,
-      weekTotalSales: totals.weekTotalSales,
-      dayTotalSales: totals.dayTotalSales,
-      monthlyOrderTotals: monthlyOrderTotalsArray
+    yearTotalSales: totals.yearTotalSales,
+    monthTotalSales: totals.monthTotalSales,
+    weekTotalSales: totals.weekTotalSales,
+    dayTotalSales: totals.dayTotalSales,
+    monthlyOrderTotals: monthlyOrderTotalsArray,
   };
 
   res.json(result);
 });
-
 
 // Get all orders
 router.get("/dashboardOrders", async (req, res) => {
