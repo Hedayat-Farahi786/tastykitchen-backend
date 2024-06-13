@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const Order = require("../models/order");
 const User = require("../models/user");
-const { notifyNewOrder } = require('../websocketServer');
+const { notifyNewOrder } = require('../../websocketServer');
 
 router.post("/", async (req, res) => {
   try {
