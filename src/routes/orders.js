@@ -93,7 +93,14 @@ router.get("/", async (req, res) => {
       sort: { orderNumber: -1 },
       populate: [
         { path: "customer", model: "Customer" },
-        { path: "products.productId", model: "Product" },
+        {
+          path: "products.productId",
+          model: "Product",
+          populate: {
+            path: "menuId",
+            model: "Category",
+          },
+        },
       ],
     };
 
@@ -194,6 +201,10 @@ router.get("/dashboardOrders", async (req, res) => {
       .populate({
         path: "products.productId",
         model: "Product",
+        populate: {
+          path: "menuId",
+          model: "Category",
+        },
       });
     res.status(200).json(orders);
   } catch (error) {
@@ -204,7 +215,16 @@ router.get("/dashboardOrders", async (req, res) => {
 // Get a single order by ID
 router.get("/:orderNumber", async (req, res) => {
   try {
-    const order = await Order.findOne({ orderNumber: req.params.orderNumber });
+    const order = await Order.findOne({ orderNumber: req.params.orderNumber })
+      .populate({ path: "customer", model: "Customer" })
+      .populate({
+        path: "products.productId",
+        model: "Product",
+        populate: {
+          path: "menuId",
+          model: "Category",
+        },
+      });
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
