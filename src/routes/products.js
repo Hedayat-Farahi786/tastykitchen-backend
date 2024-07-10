@@ -54,6 +54,30 @@ router.get('/top', async (req, res) => {
     }
   });
 
+
+  router.put('/:id/toggleVisible', async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      // Find the product by ID
+      const product = await Product.findById(id);
+  
+      if (!product) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+  
+      // Toggle the topProduct field
+      product.visible = !product.visible;
+  
+      // Save the updated product
+      await product.save();
+  
+      res.status(200).json(product);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
 // Create a new product
 router.post('/', async (req, res) => {
   try {
