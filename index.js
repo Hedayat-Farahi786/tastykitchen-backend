@@ -39,6 +39,7 @@ app.use("/testimonials", require("./src/routes/testimonials"));
 app.use("/contacts", require("./src/routes/contacts"));
 app.use("/revenue", require("./src/routes/revenue"));
 app.use("/customers", require("./src/routes/customers"));
+app.use("/auth", require("./src/routes/auth"));
 
 // Start the server
 app.listen(PORT, () => {
