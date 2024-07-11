@@ -41,6 +41,19 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.delete("/delete/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    res.send("User deleted successfully");
+  } catch (error) {
+    res.status(500).send("Error deleting user");
+  }
+});
+
 router.get("/validate", (req, res) => {
   const token = req.headers["authorization"];
   if (!token) {
@@ -52,6 +65,15 @@ router.get("/validate", (req, res) => {
     }
     res.send("Authorized");
   });
+});
+
+router.get("/users", async (req, res) => {
+  try {
+    const users = await User.find({}, 'username _id'); // Fetch only email and _id fields
+    res.json(users);
+  } catch (error) {
+    res.status(500).send("Error fetching users");
+  }
 });
 
 router.post("/forgot-password", async (req, res) => {
