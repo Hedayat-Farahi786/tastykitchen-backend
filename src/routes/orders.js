@@ -116,6 +116,37 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/today", async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const orders = await Order.find({
+      time: {
+        $gte: today,
+        $lt: tomorrow
+      }
+    })
+    .sort({ time: -1 })
+    .populate({ path: "customer", model: "Customer" })
+    .populate({
+      path: "products.productId",
+      model: "Product",
+      populate: {
+        path: "menuId",
+        model: "Category",
+      },
+    });
+
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get("/sales", async (req, res) => {
   // Calculate totals
   const orders = await Order.find();
