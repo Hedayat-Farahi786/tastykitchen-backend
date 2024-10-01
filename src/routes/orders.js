@@ -50,7 +50,7 @@ router.post("/", async (req, res) => {
 
     // Populate the saved order with the customer and products details
     const populatedOrder = await savedOrder
-      .populate({ path: "customer", model: "User" })
+      .populate({ path: "customer", model: "Customer" })
       .populate({
         path: "products.productId",
         model: "Product",
