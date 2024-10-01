@@ -45,11 +45,10 @@ router.post("/", async (req, res) => {
       time,
     });
 
-    // Save the new order to the database
     const savedOrder = await newOrder.save();
 
-    // Populate the saved order with the customer and products details
-    const populatedOrder = await savedOrder
+    // Populate the saved order
+    const populatedOrder = await Order.findById(savedOrder._id)
       .populate({ path: "customer", model: "Customer" })
       .populate({
         path: "products.productId",
@@ -58,8 +57,7 @@ router.post("/", async (req, res) => {
           path: "menuId",
           model: "Category",
         },
-      })
-      .execPopulate();
+      });
 
     res.status(201).json(populatedOrder);
   } catch (error) {
