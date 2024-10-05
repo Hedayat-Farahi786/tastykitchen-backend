@@ -5,6 +5,8 @@ const bodyParser = require("body-parser");
 const app = express();
 const PORT = process.env.PORT || 4000;
 const dotenv = require("dotenv").config();
+const Stripe = require('stripe');
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 const cors = require("cors");
 
@@ -29,6 +31,25 @@ mongoose
 app.get("/", (req, res) => {
   res.send("Hello! :)");
 });
+
+app.post('/api/create-payment-intent', async (req, res) => {
+  try {
+    const { amount, currency = 'eur' } = req.body;
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency,
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+
+    res.json({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // Routes
 app.use("/products", require("./src/routes/products"));

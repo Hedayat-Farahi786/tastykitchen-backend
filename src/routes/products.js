@@ -39,7 +39,15 @@ router.get('/top', async (req, res) => {
       const product = await Product.findById(id);
   
       if (!product) {
-        return res.status(404).json({ error: 'Product not found' });
+        return res.status(404).json({ message: 'Product not found' });
+      }
+  
+      // Check how many top products currently exist
+      const topProductsCount = await Product.countDocuments({ topProduct: true });
+  
+      // If the product is not currently a top product, check if there are already 3 top products
+      if (!product.topProduct && topProductsCount >= 3) {
+        return res.status(400).json({ message: 'Only 3 products can be set as top products' });
       }
   
       // Toggle the topProduct field
@@ -50,9 +58,10 @@ router.get('/top', async (req, res) => {
   
       res.status(200).json(product);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ message: error.message });
     }
   });
+  
 
 
   router.put('/:id/toggleVisible', async (req, res) => {
