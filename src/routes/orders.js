@@ -59,6 +59,9 @@ router.post("/", async (req, res) => {
         },
       });
 
+    // Note: Socket emission now happens from the client side (main app)
+    // The main app will emit "new_order" event after receiving this response
+
     res.status(201).json(populatedOrder);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -138,19 +141,19 @@ router.get("/today", async (req, res) => {
     const orders = await Order.find({
       time: {
         $gte: today,
-        $lt: tomorrow
-      }
-    })
-    .sort({ time: -1 })
-    .populate({ path: "customer", model: "Customer" })
-    .populate({
-      path: "products.productId",
-      model: "Product",
-      populate: {
-        path: "menuId",
-        model: "Category",
+        $lt: tomorrow,
       },
-    });
+    })
+      .sort({ time: -1 })
+      .populate({ path: "customer", model: "Customer" })
+      .populate({
+        path: "products.productId",
+        model: "Product",
+        populate: {
+          path: "menuId",
+          model: "Category",
+        },
+      });
 
     res.status(200).json(orders);
   } catch (error) {
