@@ -13,7 +13,7 @@ const io = socketIo(server, {
       "http://localhost:5174", // Admin app dev
       "http://localhost:4173", // Main app preview
       "http://localhost:4174", // Admin app preview
-      "*" // Allow all for development (remove in production)
+      "*", // Allow all for development (remove in production)
     ],
     methods: ["GET", "POST"],
     credentials: true,
@@ -83,14 +83,20 @@ io.on("connection", (socket) => {
 
   // Listen for new_order event from main app
   socket.on("new_order", (order) => {
-    console.log("New order received via socket:", order.orderNumber || order._id);
+    console.log(
+      "New order received via socket:",
+      order.orderNumber || order._id
+    );
     // Broadcast the new order to all connected clients
     io.emit("new_order", order);
   });
 
   // Also support new-order with hyphen for compatibility
   socket.on("new-order", (order) => {
-    console.log("New order received via socket (hyphen):", order.orderNumber || order._id);
+    console.log(
+      "New order received via socket (hyphen):",
+      order.orderNumber || order._id
+    );
     io.emit("new_order", order);
   });
 
